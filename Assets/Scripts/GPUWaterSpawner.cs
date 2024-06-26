@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using UnityEngine;
 
-public class WaterSpawnScript : MonoBehaviour
+public class GPUWaterSpawner : MonoBehaviour
 {
     [SerializeField] private GameObject[] densityPoints;
 
@@ -67,7 +67,7 @@ public class WaterSpawnScript : MonoBehaviour
             c++;
         }
         */
-        
+
     }
 
     // Update is called once per frame
@@ -78,21 +78,21 @@ public class WaterSpawnScript : MonoBehaviour
         {
             densityList[Int32.Parse(waterParticle.gameObject.name)] = CalculateDensity(waterParticle.transform.position);
         }
-        
-        foreach(Rigidbody2D particle in rbOfParticles)
+
+        foreach (Rigidbody2D particle in rbOfParticles)
         {
             Vector2 force = CalculateDensityGradient(particle.position);
             particle.AddForce(force);
             //particle.velocity = force;
         }
-        
+
     }
 
     float CalculateDensity(Vector3 point)
     {
         float density = 0;
         Collider2D[] foundParticles = Physics2D.OverlapCircleAll(point, smoothingRadius);
-        
+
         foreach (Collider2D foundParticle in foundParticles)
         {
             if (foundParticle.gameObject.tag == "Water")
@@ -102,7 +102,7 @@ public class WaterSpawnScript : MonoBehaviour
                 density += waterParticleMass * influence;
             }
         }
-        
+
         return density;
     }
 

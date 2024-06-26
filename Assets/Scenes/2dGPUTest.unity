@@ -906,7 +906,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2015971629}
-  - component: {fileID: 2015971628}
+  - component: {fileID: 2015971630}
   m_Layer: 0
   m_Name: WaterSpawner
   m_TagString: Untagged
@@ -914,32 +914,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2015971628
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2015971627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8505512763a7a7541bba4de29e54f58e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  densityPoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  waterPreFab: {fileID: 2340074134590583380, guid: f128c2e27c4a8054d9691050f9f742e7, type: 3}
-  amountOfParticles: 500
-  spawnGap: 0.5
-  waterParticleSize: 0.35
-  waterParticleMass: 1
-  smoothingRadius: 1
-  targetDensity: 2
-  pressureMultiplier: 2
-  downwardsForce: 0
 --- !u!4 &2015971629
 Transform:
   m_ObjectHideFlags: 0
@@ -955,6 +929,28 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2015971630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2015971627}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b04dbb0e3e31d8488e1fde22ede2151, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  densityPoints: []
+  waterPreFab: {fileID: 2340074134590583380, guid: f128c2e27c4a8054d9691050f9f742e7, type: 3}
+  amountOfParticles: 500
+  spawnGap: 0.5
+  waterParticleSize: 0.35
+  waterParticleMass: 1
+  smoothingRadius: 1
+  targetDensity: 2
+  pressureMultiplier: 2
+  downwardsForce: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
