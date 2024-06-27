@@ -21,9 +21,6 @@ public class WaterSpawnScript : MonoBehaviour
     private const float startXPos = -10f;
     private const float startYPos = 5f;
 
-    private float currentXPos;
-    private float currentYPos;
-
     private List<GameObject> waterList = new List<GameObject>();
     private List<Rigidbody2D> rbOfParticles = new List<Rigidbody2D>();
     private List<float> densityList = new List<float>();
@@ -32,13 +29,10 @@ public class WaterSpawnScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //Physics2D.gravity = Vector2.zero;
-        //Physics2D.gravity = Vector2.down * 0.5f;
-
         densityList = new List<float>(new float[amountOfParticles]);
 
-        currentXPos = startXPos;
-        currentYPos = startYPos;
+        float currentXPos = startXPos;
+        float currentYPos = startYPos;
         for (int i = 0; i < amountOfParticles; i++)
         {
             GameObject temp = Instantiate(waterPreFab, new Vector3(currentXPos, currentYPos), Quaternion.identity);
@@ -92,7 +86,6 @@ public class WaterSpawnScript : MonoBehaviour
     {
         float density = 0;
         Collider2D[] foundParticles = Physics2D.OverlapCircleAll(point, smoothingRadius);
-        
         foreach (Collider2D foundParticle in foundParticles)
         {
             if (foundParticle.gameObject.tag == "Water")
@@ -102,7 +95,6 @@ public class WaterSpawnScript : MonoBehaviour
                 density += waterParticleMass * influence;
             }
         }
-        
         return density;
     }
 
@@ -145,5 +137,4 @@ public class WaterSpawnScript : MonoBehaviour
         float pressure = densityError * pressureMultiplier;
         return pressure;
     }
-
 }

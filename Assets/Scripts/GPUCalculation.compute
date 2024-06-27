@@ -10,7 +10,6 @@ struct Particle
     float3 force;
 };
 
-
 RWStructuredBuffer<Particle> particles;
 RWStructuredBuffer<Particle> particleForces;
 
