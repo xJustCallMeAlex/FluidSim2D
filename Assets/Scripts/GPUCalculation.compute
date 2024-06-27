@@ -1,0 +1,75 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CalculateDensityGPU
+#pragma kernel CalculateDensityGradientGPU
+
+struct Particle
+{
+    int name;
+    float3 position;
+    float density;
+    float3 force;
+};
+
+
+RWStructuredBuffer<Particle> particles;
+RWStructuredBuffer<Particle> particleForces;
+
+float waterParticleMass;
+float smoothingRadius;
+float amountOfParticles;
+float targetDensity;
+float pressureMultiplier;
+
+[numthreads(1,1,1)]
+void CalculateDensityGPU(uint3 id : SV_DispatchThreadID)
+{    
+    Particle p = particles[id.x];
+    float density = 0;
+    for (int i = 0; i < amountOfParticles; i++)
+    {
+        float3 diff = particles[i].position - p.position;
+        float distance = length(diff);
+        float volume = 3.14159265358979323846 * pow(smoothingRadius, 5) / 10.0;
+        float value = max(0.0, smoothingRadius - distance);
+        float influence = value * value * value / volume;
+        density += waterParticleMass * influence;
+    }
+    p.density = density;
+    particles[id.x] = p;
+}
+
+[numthreads(1,1,1)]
+void CalculateDensityGradientGPU(uint3 id : SV_DispatchThreadID)
+{
+    Particle p = particleForces[id.x];
+    float3 gradient = float3(0.0, 0.0, 0.0);
+    for (int i = 0; i < amountOfParticles; i++)
+    {
+        Particle foundParticle = particleForces[i];
+        float3 diff = foundParticle.position - p.position;
+        float distance = length(diff);        
+        float3 direction;
+        if (distance == 0)
+        {
+            direction = float3(0.0, 0.0, 0.0);
+        }
+        else
+        {
+            direction = diff / distance;
+        }
+        float volume = -30 / (3.14159265358979323846 * pow(smoothingRadius, 5));
+        float value = max(0.0, smoothingRadius - distance);
+        float slope = value * value * volume;
+        float density = foundParticle.density;
+        float densityError = density - targetDensity;
+        float pressure = densityError * pressureMultiplier;
+        gradient += pressure * slope * waterParticleMass * direction / density;
+
+    }
+    p.force = gradient;
+    particleForces[id.x] = p;
+
+}
+
+
+

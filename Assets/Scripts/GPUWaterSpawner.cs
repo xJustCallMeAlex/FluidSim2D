@@ -1,13 +1,20 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using UnityEngine;
+
+struct Particle
+{
+    public int name;
+    public Vector3 position;
+    public float density;
+    public Vector3 force;
+}
 
 public class GPUWaterSpawner : MonoBehaviour
 {
     [SerializeField] private GameObject[] densityPoints;
 
+    [SerializeField] private ComputeShader compute;
     [SerializeField] private GameObject waterPreFab;
     [SerializeField] private int amountOfParticles = 200;
     [SerializeField] private float spawnGap = 0.1f;
@@ -21,24 +28,20 @@ public class GPUWaterSpawner : MonoBehaviour
     private const float startXPos = -10f;
     private const float startYPos = 5f;
 
-    private float currentXPos;
-    private float currentYPos;
-
-    private List<GameObject> waterList = new List<GameObject>();
     private List<Rigidbody2D> rbOfParticles = new List<Rigidbody2D>();
-    private List<float> densityList = new List<float>();
+
+    private int densityKernel = 0;
+    private int gradientKernel = 1;
+    private Particle[] particleData;
 
 
     // Start is called before the first frame update
     void Start()
     {
-        //Physics2D.gravity = Vector2.zero;
-        //Physics2D.gravity = Vector2.down * 0.5f;
+        particleData = new Particle[amountOfParticles];
 
-        densityList = new List<float>(new float[amountOfParticles]);
-
-        currentXPos = startXPos;
-        currentYPos = startYPos;
+        float currentXPos = startXPos;
+        float currentYPos = startYPos;
         for (int i = 0; i < amountOfParticles; i++)
         {
             GameObject temp = Instantiate(waterPreFab, new Vector3(currentXPos, currentYPos), Quaternion.identity);
@@ -55,7 +58,13 @@ public class GPUWaterSpawner : MonoBehaviour
                 break;
             }
             rbOfParticles.Add(temp.GetComponent<Rigidbody2D>());
-            waterList.Add(temp);
+
+            Particle p = new Particle();
+            p.name = i;
+            p.position = temp.transform.position;
+            p.density = 0;
+            p.force = Vector3.zero;
+            particleData[i] = p;
         }
 
         //Debug.Log("Density Value: " + CalculateDensity(densityPoints[0].transform.position));
@@ -67,83 +76,55 @@ public class GPUWaterSpawner : MonoBehaviour
             c++;
         }
         */
-
     }
 
     // Update is called once per frame
     void Update()
     {
         Physics2D.gravity = Vector2.down * downwardsForce;
-        foreach (GameObject waterParticle in waterList)
+        
+        int j = 0;
+        foreach (Rigidbody2D rb in rbOfParticles)
         {
-            densityList[Int32.Parse(waterParticle.gameObject.name)] = CalculateDensity(waterParticle.transform.position);
+            particleData[j].position = rb.position;
+            j++;
         }
+        
+        int nameSize = sizeof(int);
+        int vector3Size = sizeof(float) * 3;
+        int densitySize = sizeof(float);
+        int forceSize = sizeof(float) * 3;
+        int totalSize = nameSize + vector3Size + densitySize + forceSize;
 
+        ComputeBuffer particlesBuffer = new ComputeBuffer(particleData.Length, totalSize);
+        particlesBuffer.SetData(particleData);
+        compute.SetBuffer(densityKernel, "particles", particlesBuffer);
+        compute.SetFloat("waterParticleMass", waterParticleMass);
+        compute.SetFloat("smoothingRadius", smoothingRadius);
+        compute.SetFloat("amountOfParticles", amountOfParticles);
+        compute.Dispatch(densityKernel, amountOfParticles, 1, 1);
+        particlesBuffer.GetData(particleData);
+
+        ComputeBuffer forceBuffer = new ComputeBuffer(particleData.Length, totalSize);
+        forceBuffer.SetData(particleData);
+        compute.SetBuffer(gradientKernel, "particleForces", forceBuffer);
+        compute.SetFloat("targetDensity", targetDensity);
+        compute.SetFloat("pressureMultiplier", pressureMultiplier);
+        compute.Dispatch(gradientKernel, amountOfParticles, 1, 1);
+        forceBuffer.GetData(particleData);
+
+        int i = 0;
         foreach (Rigidbody2D particle in rbOfParticles)
         {
-            Vector2 force = CalculateDensityGradient(particle.position);
+            Vector2 force = particleData[i].force;
             particle.AddForce(force);
-            //particle.velocity = force;
+            //particle.velocity = force + Vector2.down * downwardsForce;
+            //particleData[i].position = particle.position;
+            i++;
         }
+        particlesBuffer.Dispose();
+        forceBuffer.Dispose();
 
-    }
-
-    float CalculateDensity(Vector3 point)
-    {
-        float density = 0;
-        Collider2D[] foundParticles = Physics2D.OverlapCircleAll(point, smoothingRadius);
-
-        foreach (Collider2D foundParticle in foundParticles)
-        {
-            if (foundParticle.gameObject.tag == "Water")
-            {
-                float distance = (foundParticle.transform.position - point).magnitude;
-                float influence = CalculateInfluence(distance);
-                density += waterParticleMass * influence;
-            }
-        }
-
-        return density;
-    }
-
-    float CalculateInfluence(float distance)
-    {
-        float volume = Mathf.PI * Mathf.Pow(smoothingRadius, 5) / 10;
-        float value = Mathf.Max(0.0f, smoothingRadius - distance);
-        return value * value * value / volume;
-    }
-
-    float CalculateInfluenceDerivative(float distance)
-    {
-        float volume = -30 / (Mathf.PI * Mathf.Pow(smoothingRadius, 5));
-        float value = smoothingRadius - distance;
-        return value * value * volume;
-    }
-
-    Vector3 CalculateDensityGradient(Vector3 point)
-    {
-        Vector3 gradient = Vector3.zero;
-        Collider2D[] foundParticles = Physics2D.OverlapCircleAll(point, smoothingRadius);
-        foreach (Collider2D foundParticle in foundParticles)
-        {
-            if (foundParticle.gameObject.tag == "Water")
-            {
-                Vector3 difference = foundParticle.transform.position - point;
-                float distance = difference.magnitude;
-                Vector3 direction = distance == 0 ? Vector3.zero : difference / distance;
-                float slope = CalculateInfluenceDerivative(distance);
-                float density = densityList[Int32.Parse(foundParticle.gameObject.name)];
-                gradient += ConvertDensityToPressure(density) * slope * waterParticleMass * direction / density;
-            }
-        }
-        return gradient;
-    }
-
-    float ConvertDensityToPressure(float density)
-    {
-        float densityError = density - targetDensity;
-        float pressure = densityError * pressureMultiplier;
-        return pressure;
     }
 
 }

@@ -942,6 +942,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   densityPoints: []
+  compute: {fileID: 7200000, guid: 625cc5ae47f33a947af4a31a12db728a, type: 3}
   waterPreFab: {fileID: 2340074134590583380, guid: f128c2e27c4a8054d9691050f9f742e7, type: 3}
   amountOfParticles: 500
   spawnGap: 0.5
@@ -950,7 +951,7 @@ MonoBehaviour:
   smoothingRadius: 1
   targetDensity: 2
   pressureMultiplier: 2
-  downwardsForce: 0
+  downwardsForce: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
