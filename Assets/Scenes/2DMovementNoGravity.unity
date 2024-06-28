@@ -939,7 +939,7 @@ MonoBehaviour:
   smoothingRadius: 1
   targetDensity: 2
   pressureMultiplier: 2
-  downwardsForce: 0
+  downwardsForce: 0.5
 --- !u!4 &2015971629
 Transform:
   m_ObjectHideFlags: 0
