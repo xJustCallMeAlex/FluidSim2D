@@ -149,8 +149,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 186314669}
   - {fileID: 141626676}
@@ -784,7 +784,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 8
+  orthographic size: 13.22
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -932,7 +932,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   waterPreFab: {fileID: 2340074134590583380, guid: f128c2e27c4a8054d9691050f9f742e7, type: 3}
-  amountOfParticles: 500
+  amountOfParticles: 200
   spawnGap: 0.5
   waterParticleSize: 0.35
   waterParticleMass: 1
